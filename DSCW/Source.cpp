@@ -245,6 +245,38 @@ int Poptart_Dispenser::getStateParam(stateParameter SP)
 	return this->stateParameters[SP];
 }
 
+bool OutOfPoptart::insertMoney(int money)
+{
+	cout << "Out of Poptarts!" << endl;
+	return false;
+}
+
+bool OutOfPoptart::makeSelection(int option)
+{
+	cout << "Out of Poptarts!" << endl;
+	return false;
+}
+
+bool OutOfPoptart::moneyRejected(void)
+{
+	cout << "Money has been returned" << endl;
+	return true;
+}
+
+bool OutOfPoptart::addPoptart(int number)
+{
+	cout << number << " Poptarts have been added" << endl;
+	this->CurrentContext->setStateParam(No_Of_Poptarts, number);
+	this->CurrentContext->setState(No_Credit);
+	return true;
+}
+
+bool OutOfPoptart::dispense(void)
+{
+	cout << "Out of Poptarts!" << endl;
+	return false;
+}
+
 bool NoCredit::insertMoney(int money)
 {
 	cout << "You inserted: " << money;
@@ -276,4 +308,110 @@ bool NoCredit::dispense(void)
 {
 	cout << "No Money Inserted" << endl;
 	return false;
+}
+
+
+bool HasCredit::insertMoney(int money)
+{
+	int temp = 0;
+	temp = this->CurrentContext->getStateParam(Credit);
+	cout << "You inserted: " << money;
+	temp = temp + money;
+	this->CurrentContext->setStateParam(Credit, temp);
+	cout << " Total: " << money << endl;
+	this->CurrentContext->setState(Has_Credit);
+	return true;
+}
+bool HasCredit::makeSelection(int option) {
+	cout << "Poptart Selected" << endl;
+	this->CurrentContext->setState(Dispenses_Poptart);
+	return true;
+}
+
+bool HasCredit::moneyRejected(void) {
+	cout << "Money has been returned" << endl;
+	this->CurrentContext->setStateParam(Credit, 0);
+	this->CurrentContext->setState(No_Credit);
+	return true;
+}
+
+bool HasCredit::addPoptart(int number)
+{
+	cout << "Poptart already inserted" << endl;
+	return false;
+}
+
+bool HasCredit::dispense(void) {
+	cout << "" << endl;
+	return false;
+}
+
+bool DispensesPoptart::insertMoney(int money) 
+{
+	cout << "Poptart Dispensing" << endl;
+	return false;
+}
+
+bool DispensesPoptart::makeSelection(int option)
+{
+	cout << "Poptart Dispensing" << endl;
+	return false;
+}
+
+bool DispensesPoptart::moneyRejected(void)
+{
+	cout << "Poptart Dispensing" << endl;
+	return false;
+}
+
+bool DispensesPoptart::addPoptart(int number)
+{
+	cout << "Poptart Dispensing" << endl;
+	return false;
+}
+
+bool DispensesPoptart::dispense(void) 
+{
+	int poptartStockCheck = 0;
+	int creditCheck = 0;
+	poptartStockCheck = this->CurrentContext->getStateParam(No_Of_Poptarts);
+	creditCheck = this->CurrentContext->getStateParam(Credit);
+	if (poptartStockCheck > 0)
+	{
+		if (creditCheck > 0) 
+		{
+			cout << "Dispensing Poptart" << endl;
+			this->CurrentContext->setState(Has_Credit);
+			return true;
+		}
+		else if (creditCheck == 0)
+		{
+			cout << "Dispensing Poptart" << endl;
+			this->CurrentContext->setState(No_Credit);
+			return true;
+		}
+	}
+	else if (poptartStockCheck == 0)
+	{
+		cout << "Dispensing Poptart" << endl;
+		this->CurrentContext->setState(Out_Of_Poptart);
+		return true;
+	}
+
+}
+
+Poptart_Dispenser::Poptart_Dispenser(int inventory_count)
+{
+	this->availableStates.push_back(new OutOfPoptart(this));
+	this->availableStates.push_back(new NoCredit(this));
+	this->availableStates.push_back(new HasCredit(this));
+	this->availableStates.push_back(new DispensesPoptart(this));
+	this->availableStates.push_back(0); //Number of Poptarts
+	this->availableStates.push_back(0); //Available Credit
+
+	this->setState(Out_Of_Poptart);
+	if (inventory_count > 0)
+	{
+		this->addPoptart(inventory_count);
+	}
 }
