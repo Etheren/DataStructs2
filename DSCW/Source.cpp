@@ -372,10 +372,8 @@ bool DispensesPoptart::addPoptart(int number)
 
 bool DispensesPoptart::dispense(void) 
 {
-	int poptartStockCheck = 0;
-	int creditCheck = 0;
-	poptartStockCheck = this->CurrentContext->getStateParam(No_Of_Poptarts);
-	creditCheck = this->CurrentContext->getStateParam(Credit);
+	int poptartStockCheck = this->CurrentContext->getStateParam(No_Of_Poptarts);
+	int creditCheck = this->CurrentContext->getStateParam(Credit);
 	if (poptartStockCheck > 0)
 	{
 		if (creditCheck > 0) 
