@@ -1,11 +1,12 @@
-#include <string>
-#include <iostream>
-#include <vector>
+//Libraries used within the code
+#include <string>			//String is used ONLY in the Product Descriptions
+#include <iostream>			//IOStream is used to output Messages to the consoles 
+#include <vector>			//Vector is used for states and state parameters only
 
-using namespace std;
+using namespace std;		//Namespace is placed here to 
 
-enum state { Out_Of_Poptart, No_Credit, Has_Credit, Dispenses_Poptart };
-enum stateParameter { No_Of_Poptarts, Credit, Cost_Of_Poptart };
+enum state { Out_Of_Poptart, No_Credit, Has_Credit, Dispenses_Poptart };//These are the states used in the dispenser depending on what the dispenser is doing,
+enum stateParameter { No_Of_Poptarts, Credit, Cost_Of_Poptart };		//And these are parameters used alongside the states
 
 class StateContext;
 
@@ -138,9 +139,18 @@ protected:
 	string product_description;
 	int itemCost = 0;
 public:
-	virtual void consume(void);
-	virtual int cost(void);
-	virtual string description(void);
+	virtual void consume(void)
+	{
+		delete this;
+	};
+	virtual int cost(void)
+	{
+		return this->itemCost;
+	}
+	virtual string description(void)
+	{
+		return this->product_description;
+	}
 };
 
 class Poptart : public Product
@@ -306,7 +316,14 @@ bool OutOfPoptart::moneyRejected(void)
 
 bool OutOfPoptart::addPoptart(int number)
 {
-	cout << number << " Poptarts have been added" << endl;
+	if (number == 1)
+	{
+		cout << number << " Poptart has been added" << endl;
+	}
+	else if (number > 1)
+	{
+		cout << number << " Poptarts have been added" << endl;
+	}
 	this->CurrentContext->setStateParam(No_Of_Poptarts, number);
 	this->CurrentContext->setState(No_Credit);
 	return true;
@@ -320,9 +337,9 @@ bool OutOfPoptart::dispense(void)
 
 bool NoCredit::insertMoney(int money)
 {
-	cout << "You inserted: " << money;
+	cout << "You inserted: " << money << " Credits";
 	this->CurrentContext->setStateParam(Credit, money);
-	cout << " Total: " << money << endl;
+	cout << " Total: " << money << " Credits" << endl;
 	this->CurrentContext->setState(Has_Credit);
 	return true;
 }
@@ -351,24 +368,60 @@ bool NoCredit::dispense(void)
 	return false;
 }
 
-
 bool HasCredit::insertMoney(int money)
 {
-	int temp = 0;
-	temp = this->CurrentContext->getStateParam(Credit);
-	cout << "You inserted: " << money;
-	temp = temp + money;
-	this->CurrentContext->setStateParam(Credit, temp);
-	cout << " Total: " << money << endl;
+	cout << "You inserted: " << money << " Credits.";
+	this->CurrentContext->setStateParam(Credit, this->CurrentContext->getStateParam(Credit)+ money);
+	cout << " Total: " << this->CurrentContext->getStateParam(Credit) << " Credits" << endl;
 	this->CurrentContext->setState(Has_Credit);
 	return true;
 }
+
 bool HasCredit::makeSelection(int option) {
 	switch (option) {
 	case 1:
-		((Poptart_Dispenser*)(this->CurrentContext))
+		((Poptart_Dispenser*)(this->CurrentContext))->DispensedItem = new Plain();
+		cout << "Plain Poptart Selected" << endl;
+		break;
+
+	case 2:
+		((Poptart_Dispenser*)(this->CurrentContext))->DispensedItem = new Spicy();
+		cout << "Spicy Poptart Selected" << endl;
+		break;
+
+	case 4:
+		((Poptart_Dispenser*)(this->CurrentContext))->DispensedItem = new Chocolate();
+		cout << "Chocolate Poptart Selected" << endl;
+		break;
+	
+	case 8:
+		((Poptart_Dispenser*)(this->CurrentContext))->DispensedItem = new Coconut();
+		cout << "Coconut Poptart Selected" << endl;
+		break;
+
+	case 16:
+		((Poptart_Dispenser*)(this->CurrentContext))->DispensedItem = new Fruity();
+		cout << "Fruity Poptart Selected" << endl;
+		break;
+
+	default:
+		cout << "No valid Poptart Selected" << endl;
+		return false;
+		break;
 	}
-	this->CurrentContext->setState(Dispenses_Poptart);
+
+	if (this->CurrentContext->getStateParam(Credit) < this->CurrentContext->getStateParam(Cost_Of_Poptart))
+	{
+		delete ((Poptart_Dispenser*)(this->CurrentContext))->DispensedItem;
+		cout << "Not enough credit inserted" << endl;
+	}
+
+	else
+	{
+		this->CurrentContext->setStateParam(Credit, this->CurrentContext->getStateParam(Credit) - this->CurrentContext->getStateParam(Cost_Of_Poptart));
+		this->CurrentContext->setState(Dispenses_Poptart);
+
+	}
 	return true;
 }
 
@@ -386,7 +439,7 @@ bool HasCredit::addPoptart(int number)
 }
 
 bool HasCredit::dispense(void) {
-	cout << "" << endl;
+	cout << "Poptart must be selected before dispensing" << endl;
 	return false;
 }
 
@@ -416,41 +469,42 @@ bool DispensesPoptart::addPoptart(int number)
 
 bool DispensesPoptart::dispense(void) 
 {
-	int poptartStockCheck = this->CurrentContext->getStateParam(No_Of_Poptarts);
-	int creditCheck = this->CurrentContext->getStateParam(Credit);
-	if (poptartStockCheck > 0)
+	Product* dispensed = ((Poptart_Dispenser*)(CurrentContext))->DispensedItem;
+	((Poptart_Dispenser*)(CurrentContext))->DispensedItem = nullptr;
+	dispensed->consume();
+	cout << "Dispensing Poptart" << endl;
+	this->CurrentContext->setStateParam(No_Of_Poptarts, this->CurrentContext->getStateParam(No_Of_Poptarts) - 1);
+	if (this->CurrentContext->getStateParam(No_Of_Poptarts) > 0)
 	{
-		if (creditCheck > 0) 
+		if (this->CurrentContext->getStateParam(Credit) > 0) 
 		{
-			cout << "Dispensing Poptart" << endl;
 			this->CurrentContext->setState(Has_Credit);
-			return true;
 		}
-		else if (creditCheck == 0)
+		else if (this->CurrentContext->getStateParam(Credit) == 0)
 		{
-			cout << "Dispensing Poptart" << endl;
 			this->CurrentContext->setState(No_Credit);
-			return true;
 		}
 	}
-	else if (poptartStockCheck == 0)
+	else if (this->CurrentContext->getStateParam(No_Of_Poptarts) == 0)
 	{
-		cout << "Dispensing Poptart" << endl;
+		cout << "Out of Poptarts. Money has been returned" << endl;
+		this->CurrentContext->setStateParam(Credit, 0);
 		this->CurrentContext->setState(Out_Of_Poptart);
-		return true;
 	}
-
+	return true;
 }
 
 Poptart_Dispenser::Poptart_Dispenser(int inventory_count)
 {
+	
 	this->availableStates.push_back(new OutOfPoptart(this));
 	this->availableStates.push_back(new NoCredit(this));
 	this->availableStates.push_back(new HasCredit(this));
 	this->availableStates.push_back(new DispensesPoptart(this));
-	this->availableStates.push_back(0); //Number of Poptarts
-	this->availableStates.push_back(0); //Available Credit
-
+	this->stateParameters.push_back(No_Of_Poptarts); //Number of Poptarts
+	this->stateParameters.push_back(Credit); //Available Credit
+	this->stateParameters.push_back(Cost_Of_Poptart);
+	
 	this->setState(Out_Of_Poptart);
 	if (inventory_count > 0)
 	{
@@ -459,6 +513,16 @@ Poptart_Dispenser::Poptart_Dispenser(int inventory_count)
 }
 
 int main() {
+	Poptart_Dispenser pd(1);
+	pd.insertMoney(99);
+	pd.makeSelection(1);
+	pd.insertMoney(2);
+	pd.makeSelection(1);
+	pd.dispense();
+	pd.insertMoney(149);
+	pd.makeSelection(2);
+	pd.dispense();
 
-	sys
+	system("pause");
+	return 0;
 }
