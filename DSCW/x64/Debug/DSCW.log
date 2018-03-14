@@ -1,0 +1,4 @@
+﻿  Source.cpp
+f:\my documents\github\datastructs2\dscw\source.cpp(370): error C2143: syntax error: missing ';' before '}'
+f:\my documents\github\datastructs2\dscw\source.cpp(464): error C2065: 'sys': undeclared identifier
+f:\my documents\github\datastructs2\dscw\source.cpp(464): error C2143: syntax error: missing ';' before '}'

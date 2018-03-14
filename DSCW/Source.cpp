@@ -137,14 +137,10 @@ class Product
 protected:
 	string product_description;
 	int itemCost = 0;
-	virtual Product* ReturnNext(void);
-	virtual void RemoveHighestCostItem(Product* HighestItem);
 public:
 	virtual void consume(void);
 	virtual int cost(void);
 	virtual string description(void);
-	virtual Product* ReturnHighestCostItem(void);
-	virtual void RemoveHighestCostItem(void);
 };
 
 class Poptart : public Product
@@ -154,6 +150,51 @@ public:
 	{
 		this->product_description = "Poptart";
 		this->itemCost = 50;
+	}
+};
+
+class Plain : public Product
+{
+public:
+	Plain(void) {
+		this->itemCost = 100;
+		this->product_description = "Plain Poptart";
+	}
+};
+
+class Spicy : public Product
+{
+public:
+	Spicy(void) {
+		this->itemCost = 150;
+		this->product_description = "Spicy Poptart";
+	}
+};
+
+class Chocolate : public Product
+{
+public:
+	Chocolate(void) {
+		this->itemCost = 200;
+		this->product_description = "Chocolate Poptart";
+	}
+};
+
+class Coconut : public Product
+{
+public:
+	Coconut(void) {
+		this->itemCost = 200;
+		this->product_description = "Coconut Poptart";
+	}
+};
+
+class Fruity : public Product
+{
+public:
+	Fruity(void) {
+		this->itemCost = 200;
+		this->product_description = "Fruity Poptart";
 	}
 };
 
@@ -323,7 +364,10 @@ bool HasCredit::insertMoney(int money)
 	return true;
 }
 bool HasCredit::makeSelection(int option) {
-	cout << "Poptart Selected" << endl;
+	switch (option) {
+	case 1:
+		((Poptart_Dispenser*)(this->CurrentContext))
+	}
 	this->CurrentContext->setState(Dispenses_Poptart);
 	return true;
 }
@@ -412,4 +456,9 @@ Poptart_Dispenser::Poptart_Dispenser(int inventory_count)
 	{
 		this->addPoptart(inventory_count);
 	}
+}
+
+int main() {
+
+	sys
 }
